@@ -1,19 +1,43 @@
-import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import {ECSFactory} from "./resources/ecs";
+import {ECSFactoryProps} from "./interfaces/resource";
+import {ECRFactory} from "./resources/ecr";
+import {Effect} from "aws-cdk-lib/aws-iam";
+import * as constants from "./constant/application_constants";
 
-export class SpringroleBlockchainCdkStack extends Stack {
+export class SpringRoleBlockchainCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const queue = new sqs.Queue(this, 'SpringroleBlockchainCdkQueue', {
-      visibilityTimeout: Duration.seconds(300)
-    });
+    const ecr = new ECRFactory(scope, "ECSFactory", {repositoryName: constants.ecrRepoName});
 
-    const topic = new sns.Topic(this, 'SpringroleBlockchainCdkTopic');
+    const ecsFactoryProps: ECSFactoryProps = {
+      cpu: constants.validatorTaskCpu,
+      desiredTasksCount: constants.validatorServiceTaskCount,
+      memoryLimitMiB: constants.validatorTaskMemoryLimitMiB,
+      repository: ecr.repository,
+      volume: {
+         // Use an Elastic FileSystem
+         name: constants.blockchainVolumeName,
+         efsVolumeConfiguration: {
+             fileSystemId: "EFS",
+         },
+      },
+      policyStatementProps: {
+        effect : Effect.ALLOW,
+        actions : [
+          "ssm:PutParameter",
+          "ssm:DeleteParameter",
+          "ssm:GetParameter"
+        ],
+        resources : [
+          constants.ssmResource
+        ]
+      }
 
-    topic.addSubscription(new subs.SqsSubscription(queue));
+    }
+
+    new ECSFactory(scope, "ECSFactoryConstruct", ecsFactoryProps);
   }
 }

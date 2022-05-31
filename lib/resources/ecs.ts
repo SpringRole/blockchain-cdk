@@ -10,13 +10,16 @@ export class ECSFactory extends Construct {
     constructor(parent: Construct, id: string, props: ECSFactoryProps) {
         super(parent, id);
 
-        const cluster: ICluster = this.createCluster(id, props.clusterArn);
+        const cluster: ICluster = this.createCluster(props.clusterArn);
+
+        const policy = new PolicyStatement(props.policyStatementProps);
 
         // create 4 services and task-definitions for each validator
         validators.forEach((validator) => {
             const ecsTaskAndServiceProps: ECSTaskAndServiceProps = {
                 ...props,
-                envVars: validator.envVars
+                policy,
+                envVars: validator.envVars,
             }
             this.createTaskAndService(cluster, validator.id, ecsTaskAndServiceProps)
         })
@@ -62,7 +65,7 @@ export class ECSFactory extends Construct {
 
         if(props.policyStatementProps){
             // TODO: is the task role created if not added ?
-            fargateTaskDefinition.addToTaskRolePolicy(new PolicyStatement(props.policyStatementProps))
+            fargateTaskDefinition.addToTaskRolePolicy(props.policy)
         }
 
         const service = new ecs.FargateService(this, `ECSService-${id}`, {

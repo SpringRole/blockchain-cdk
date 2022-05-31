@@ -1,5 +1,5 @@
 import {Repository} from "aws-cdk-lib/aws-ecr";
-import {PolicyStatementProps} from "aws-cdk-lib/aws-iam";
+import {PolicyStatement, PolicyStatementProps} from "aws-cdk-lib/aws-iam";
 import {Volume} from "aws-cdk-lib/aws-ecs";
 import {HashMap} from "./application_config";
 
@@ -14,7 +14,8 @@ export interface ECSFactoryProps {
 }
 
 export interface ECSTaskAndServiceProps extends ECSFactoryProps {
-    readonly envVars: HashMap
+    readonly envVars: HashMap,
+    readonly policy: PolicyStatement
 }
 export interface ECRFactoryProps {
     readonly repositoryName: string

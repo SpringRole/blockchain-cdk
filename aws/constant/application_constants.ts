@@ -1,11 +1,12 @@
 import {Validator} from "../interfaces/application_config";
+import {Aws} from "aws-cdk-lib";
 
 export const validatorTaskMemoryLimitMiB = 512;
 export const validatorTaskCpu = 256;
 export const validatorServiceTaskCount = 1;
 
 export const pipeline = {
-    accountId: "", // TODO: add accountID
+    accountId: Aws.ACCOUNT_ID, // Account id will be picked dynamically on AWS
     region: "us-east-1"
 }
 

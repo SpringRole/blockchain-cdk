@@ -15,7 +15,8 @@ export interface ECSFactoryProps {
     readonly repository: Repository;
     readonly desiredTasksCount: number;
     readonly policyStatementProps?: PolicyStatementProps;
-    readonly volume?: Volume
+    readonly volume?: Volume;
+    readonly vpc: IVpc;
 }
 
 export interface ECSTaskAndServiceProps extends ECSFactoryProps {

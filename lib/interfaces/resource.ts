@@ -17,6 +17,3 @@ export interface ECSTaskAndServiceProps extends ECSFactoryProps {
     readonly envVars: HashMap,
     readonly policy: PolicyStatement
 }
-export interface ECRFactoryProps {
-    readonly repositoryName: string
-}

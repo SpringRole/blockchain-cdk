@@ -10,7 +10,7 @@ export class SpringRoleBlockchainCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const ecr = new ECRFactory(scope, "ECSFactory", {repositoryName: constants.ecrRepoName});
+    const ecr = new ECRFactory(this, "Blockchain-ECR");
 
     const ecsFactoryProps: ECSFactoryProps = {
       cpu: constants.validatorTaskCpu,

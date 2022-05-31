@@ -13,8 +13,6 @@ export const ssmResource = `arn:aws:ssm:${pipeline.region}:${pipeline.accountId}
 
 export const blockchainVolumeName = "springrole-blockchain-volume";
 
-export const ecrRepoName = "springrole-blockchain";
-
 export const validators: Validator[] = [
     {
         id: "Validator1",

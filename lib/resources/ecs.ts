@@ -29,8 +29,8 @@ export class ECSFactory extends Construct {
     /**
      * Create Cluster if ARN is not passed else reference the cluster from arn.
      */
-    createCluster(id: string, clusterArn?: string, ){
-        const ecsClusterComponentName = `ECSCluster-${id}`;
+    createCluster(clusterArn?: string){
+        const ecsClusterComponentName = `ECSCluster`;
         let cluster: ICluster;
         // create new cluster if not arn is not passed.
         if(!clusterArn){
@@ -68,7 +68,7 @@ export class ECSFactory extends Construct {
             fargateTaskDefinition.addToTaskRolePolicy(props.policy)
         }
 
-        const service = new ecs.FargateService(this, `ECSService-${id}`, {
+        new ecs.FargateService(this, `FargateService-${id}`, {
             serviceName: `SpringRole-Blockchain-${id}`,
             cluster,
             taskDefinition: fargateTaskDefinition,

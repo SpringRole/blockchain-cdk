@@ -5,6 +5,8 @@ import {ECSFactoryProps} from "./interfaces/resource";
 import {ECRFactory} from "./resources/ecr";
 import {Effect} from "aws-cdk-lib/aws-iam";
 import * as constants from "./constant/application_constants";
+import {EFSFactory} from "./resources/efs";
+import {VPCFactory} from "./resources/vpc";
 
 export class SpringRoleBlockchainCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -12,6 +14,9 @@ export class SpringRoleBlockchainCdkStack extends Stack {
 
     const ecr = new ECRFactory(this, "Blockchain-ECR");
 
+    const Vpc = new VPCFactory(this, "Blockchain-VPC");
+
+    const efs = new EFSFactory(this, "Blockchain-EFS",{ vpc: Vpc.vpc });
     const ecsFactoryProps: ECSFactoryProps = {
       cpu: constants.validatorTaskCpu,
       desiredTasksCount: constants.validatorServiceTaskCount,
@@ -21,7 +26,7 @@ export class SpringRoleBlockchainCdkStack extends Stack {
          // Use an Elastic FileSystem
          name: constants.blockchainVolumeName,
          efsVolumeConfiguration: {
-             fileSystemId: "EFS",
+             fileSystemId: efs.fileSystem.fileSystemId,
          },
       },
       policyStatementProps: {
@@ -38,6 +43,6 @@ export class SpringRoleBlockchainCdkStack extends Stack {
 
     }
 
-    new ECSFactory(scope, "ECSFactoryConstruct", ecsFactoryProps);
+    new ECSFactory(this, "Blockchain-ECS", ecsFactoryProps);
   }
 }

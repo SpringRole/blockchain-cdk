@@ -1,6 +1,6 @@
 import {Construct} from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import {ISecurityGroup, SecurityGroup, SubnetType} from "aws-cdk-lib/aws-ec2";
+import {ISecurityGroup, Peer, Port, SecurityGroup, SubnetType} from "aws-cdk-lib/aws-ec2";
 
 
 export class VPCFactory extends Construct {
@@ -21,6 +21,9 @@ export class VPCFactory extends Construct {
             },
         })
 
-        this.securityGroup = new SecurityGroup(parent, `SecurityGroup-${id}`, { vpc: this.vpc })
+        this.securityGroup = new SecurityGroup(parent, `SecurityGroup-${id}`, { vpc: this.vpc });
+
+        //Adding Inbound Rule for NFS (EFS)
+        this.securityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(2049));
     }
 }

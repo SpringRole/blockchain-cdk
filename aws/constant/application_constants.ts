@@ -10,7 +10,7 @@ export const pipeline = {
     region: "us-east-1"
 }
 
-export const ssmResource = `arn:aws:ssm:${pipeline.region}:${pipeline.accountId}:parameter/springrole-blockchain/validator*`
+export const ssmResource = `arn:aws:ssm:${pipeline.region}:${pipeline.accountId}:parameter/blockchain/validator*`
 
 export const blockchainVolumeName = "springrole-blockchain-volume";
 

@@ -11,7 +11,8 @@ export class EFSFactory extends Construct {
         super(parent, id);
 
         this.fileSystem = new efs.FileSystem(this, 'EfsFileSystem', {
-            vpc: props.vpc, // required
+            vpc: props.VPC.vpc, // required
+            securityGroup: props.VPC.securityGroup,
             // files are not transitioned to infrequent access (IA) storage by default
             lifecyclePolicy: efs.LifecyclePolicy.AFTER_14_DAYS,
             //NOTE: changing performanceMode will replace EFS

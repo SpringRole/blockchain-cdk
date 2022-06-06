@@ -5,7 +5,7 @@ import * as SpringroleBlockchainCdk from '../aws/springrole-blockchain-cdk-stack
 test('SQS Queue and SNS Topic Created', () => {
   const app = new cdk.App();
   // WHEN
-  const stack = new SpringroleBlockchainCdk.SpringroleBlockchainCdkStack(app, 'MyTestStack');
+  const stack = new SpringroleBlockchainCdk.SpringRoleBlockchainCdkStack(app, 'MyTestStack');
   // THEN
 
   const template = Template.fromStack(stack);

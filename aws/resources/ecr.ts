@@ -33,7 +33,7 @@ export class ECRFactory extends Construct {
      */
     buildDockerAndDeploy(){
         const image = new DockerImageAsset(this, 'CDKDockerImage', {
-            directory: path.join(__dirname, '../src'),
+            directory: path.join(__dirname, '../../src/validator'),
         });
 
         new ecrdeploy.ECRDeployment(this, 'DeployDockerImage', {

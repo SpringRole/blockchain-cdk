@@ -14,9 +14,9 @@ export class SpringRoleBlockchainCdkStack extends Stack {
 
     const ecr = new ECRFactory(this, "Blockchain-ECR");
 
-    const Vpc = new VPCFactory(this, "Blockchain-VPC");
+    const VPC = new VPCFactory(this, "Blockchain-VPC");
 
-    const efs = new EFSFactory(this, "Blockchain-EFS",{ vpc: Vpc.vpc });
+    const efs = new EFSFactory(this, "Blockchain-EFS",{ VPC });
 
     const ecsFactoryProps: ECSFactoryProps = {
       cpu: constants.validatorTaskCpu,
@@ -41,7 +41,7 @@ export class SpringRoleBlockchainCdkStack extends Stack {
           constants.ssmResource
         ]
       },
-      vpc: Vpc.vpc
+      VPC
     }
 
     new ECSFactory(this, "Blockchain-ECS", ecsFactoryProps);

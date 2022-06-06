@@ -3,6 +3,7 @@ import {Repository} from "aws-cdk-lib/aws-ecr";
 import {DockerImageAsset} from "aws-cdk-lib/aws-ecr-assets";
 import * as path from "path";
 import * as ecrdeploy from 'cdk-ecr-deployment';
+import {RemovalPolicy} from "aws-cdk-lib"
 
 
 export class ECRFactory extends Construct {
@@ -32,7 +33,7 @@ export class ECRFactory extends Construct {
 
         new ecrdeploy.ECRDeployment(this, 'DeployDockerImage', {
             src: new ecrdeploy.DockerImageName(image.imageUri),
-            dest: new ecrdeploy.DockerImageName(this.repository.repositoryName),
+            dest: new ecrdeploy.DockerImageName(`${this.repository.repositoryUri}:latest`),
         });
     }
 }

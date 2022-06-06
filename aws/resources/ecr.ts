@@ -17,6 +17,11 @@ export class ECRFactory extends Construct {
             imageScanOnPush: true,
             // Don't prefer physical name: https://github.com/aws/aws-cdk/issues/5140
             // repositoryName: props.repositoryName
+
+            // Need to delete manually in case of images present in ECR.
+            // can't force CFN to delete it. Its safer to delete manually to prevent accident stack deletion.
+            // Otherwise, if ecr is empty, delete.
+            removalPolicy: RemovalPolicy.DESTROY
         });
 
         // Build the docker image from the local assets

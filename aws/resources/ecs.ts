@@ -1,8 +1,8 @@
 import {Construct} from "constructs";
 import {ECSFactoryProps, ECSTaskAndServiceProps} from "../interfaces/resource";
 import * as ecs from "aws-cdk-lib/aws-ecs";
+import {ICluster, Protocol} from "aws-cdk-lib/aws-ecs";
 import {PolicyStatement} from "aws-cdk-lib/aws-iam";
-import {ICluster} from "aws-cdk-lib/aws-ecs";
 import {validators} from "../constant/application_constants";
 import {IVpc} from "aws-cdk-lib/aws-ec2";
 
@@ -11,19 +11,11 @@ export class ECSFactory extends Construct {
     constructor(parent: Construct, id: string, props: ECSFactoryProps) {
         super(parent, id);
 
-        const cluster: ICluster = this.createCluster(props.clusterArn, props.vpc);
+        const cluster: ICluster = this.createCluster(props.clusterArn, props.VPC.vpc);
 
         const policy = new PolicyStatement(props.policyStatementProps);
 
-        // create 4 services and task-definitions for each validator
-        validators.forEach((validator) => {
-            const ecsTaskAndServiceProps: ECSTaskAndServiceProps = {
-                ...props,
-                policy,
-                envVars: validator.envVars,
-            }
-            this.createTaskAndService(cluster, validator.id, ecsTaskAndServiceProps)
-        })
+        this.createTaskAndService(cluster, {...props, policy})
     }
 
 
@@ -50,31 +42,51 @@ export class ECSFactory extends Construct {
     /**
      * Creates Fargate Task definition and Service
      */
-    createTaskAndService(cluster: ICluster, id: string, props: ECSTaskAndServiceProps){
-        const fargateTaskDefinition = new ecs.FargateTaskDefinition(this, `FargateTaskDef-${id}`, {
-            memoryLimitMiB: props.memoryLimitMiB,
-            cpu: props.cpu,
+    createTaskAndService(cluster: ICluster, props: ECSTaskAndServiceProps){
+        const fargateTaskDefinition = new ecs.FargateTaskDefinition(this, `FargateTaskDef`, {
+            cpu: 1024,
+            memoryLimitMiB: 2048
         });
 
-        fargateTaskDefinition.addContainer(`FargateContainer-${id}`, {
-            image: ecs.ContainerImage.fromEcrRepository(props.repository),
-            environment: props.envVars
-        });
+        const serviceName = `Blockchain`;
 
-        if(props.volume){
-            fargateTaskDefinition.addVolume(props.volume)
-        }
+        // Add container for each validator in the same task definition
+        validators.forEach((validator) => {
 
-        if(props.policyStatementProps){
-            // TODO: is the task role created if not added ?
-            fargateTaskDefinition.addToTaskRolePolicy(props.policy)
-        }
+            const portMappings = [
+                // expose only libp2p port to connect with other validators
+                {
+                    hostPort: Number(validator.envVars['LIBP2P_PORT']),
+                    containerPort: Number(validator.envVars['LIBP2P_PORT']),
+                    protocol: Protocol.TCP
+                }
+            ]
 
-        new ecs.FargateService(this, `FargateService-${id}`, {
-            serviceName: `SpringRole-Blockchain-${id}`,
+            if(validator.id == "Validator1"){
+                portMappings.push({
+                        hostPort: Number(validator.envVars['JSONRPC_PORT']), // Host port must be left out or equal to container port 10002 for network mode awsvpc
+                        containerPort: Number(validator.envVars['JSONRPC_PORT']),
+                        protocol: Protocol.TCP
+                    })
+            }
+
+            fargateTaskDefinition.addContainer(`FargateContainer${validator.id}`, {
+                image: ecs.ContainerImage.fromEcrRepository(props.repository),
+                environment: validator.envVars,
+                logging: ecs.LogDrivers.awsLogs({ streamPrefix: serviceName + validator.id }),
+                portMappings
+            });
+        })
+
+        fargateTaskDefinition.addVolume(props.volume)
+        fargateTaskDefinition.addToTaskRolePolicy(props.policy)
+
+        new ecs.FargateService(this, `FargateService`, {
+            serviceName,
             cluster,
             taskDefinition: fargateTaskDefinition,
             desiredCount: props.desiredTasksCount,
+            securityGroups: [props.VPC.securityGroup]
         });
     }
 }

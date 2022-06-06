@@ -1,11 +1,10 @@
 import {Repository} from "aws-cdk-lib/aws-ecr";
 import {PolicyStatement, PolicyStatementProps} from "aws-cdk-lib/aws-iam";
 import {Volume} from "aws-cdk-lib/aws-ecs";
-import {HashMap} from "./application_config";
-import {IVpc} from "aws-cdk-lib/aws-ec2";
+import {VPCFactory} from "../resources/vpc";
 
 export interface EFSFactoryProps {
-    readonly vpc: IVpc
+    readonly VPC: VPCFactory
 }
 
 export interface ECSFactoryProps {
@@ -14,12 +13,11 @@ export interface ECSFactoryProps {
     readonly cpu: number;
     readonly repository: Repository;
     readonly desiredTasksCount: number;
-    readonly policyStatementProps?: PolicyStatementProps;
-    readonly volume?: Volume;
-    readonly vpc: IVpc;
+    readonly policyStatementProps: PolicyStatementProps;
+    readonly volume: Volume;
+    readonly VPC: VPCFactory
 }
 
 export interface ECSTaskAndServiceProps extends ECSFactoryProps {
-    readonly envVars: HashMap,
     readonly policy: PolicyStatement
 }

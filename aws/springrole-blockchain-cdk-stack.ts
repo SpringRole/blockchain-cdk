@@ -1,5 +1,5 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+import {Stack, StackProps} from 'aws-cdk-lib';
+import {Construct} from 'constructs';
 import {ECSFactory} from "./resources/ecs";
 import {ECSFactoryProps} from "./interfaces/resource";
 import {ECRFactory} from "./resources/ecr";
@@ -8,13 +8,14 @@ import * as constants from "./constant/application_constants";
 import {EFSFactory} from "./resources/efs";
 import {VPCFactory} from "./resources/vpc";
 
+
 export class SpringRoleBlockchainCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     const ecr = new ECRFactory(this, "Blockchain-ECR");
 
-    const VPC = new VPCFactory(this, "Blockchain-VPC");
+    const VPC = new VPCFactory(this, "Blockchain-VPC", {vpcId: constants.VPC_ID});
 
     const efs = new EFSFactory(this, "Blockchain-EFS",{ VPC });
 

@@ -4,9 +4,8 @@ import (
     "fmt"
     "io/ioutil"
     "log"
-//     "os"
-//     "os/exec"
     "strings"
+    "os"
 )
 
 const VALIDATOR_COUNT = 4
@@ -21,10 +20,6 @@ const BOOTNODE_1_PORT = "10001" // libp2p port
 
 const BOOTNODE_2_IP = "127.0.0.1"
 const BOOTNODE_2_PORT = "20001"  // libp2p port
-
-// TODO: Add localhost support
-// var STAGE_ENV = os.Getenv("STAGE")
-// var IS_LOCAL = STAGE_ENV == "localhost"
 
 func getPublicKeyAndNodeId(fileName string) (string, string) {
 
@@ -63,24 +58,31 @@ func constructGenesisCommand() (string, []string) {
 
   for i := 0; i < VALIDATOR_COUNT; i++ {
     // concatenate
-    fileName := fmt.Sprint(VALIDATOR_OUTPUT_PREFIX, i+1, "Output.txt")
+    fileName := fmt.Sprint(APP_PATH, VALIDATOR_OUTPUT_PREFIX, i+1, "Output.txt")
     publicKeys[i], nodeIds[i] = getPublicKeyAndNodeId(fileName)
   }
 
   // NOTE: Don't Concatinate, flags should be passed individually
 
   // TODO: make all nodes as bootnodes
-  flags := []string{
-    "genesis", // subcommand
-    "--consensus", "ibft",
-    "--ibft-validator", publicKeys[0],
-    "--ibft-validator", publicKeys[1],
-    "--ibft-validator", publicKeys[2],
-    "--ibft-validator", publicKeys[3],
-    "--bootnode", constructMultiAddressConnectionString(BOOTNODE_1_IP, BOOTNODE_1_PORT, nodeIds[0]),
-    "--bootnode", constructMultiAddressConnectionString(BOOTNODE_2_IP, BOOTNODE_2_PORT, nodeIds[1]),
-    "--premine",fmt.Sprint(GENESIS_ACCOUNT, ":", PREMINE_NUM_TOKENS_IN_WEI),
-    "--name",BLOCKCHAIN_NAME}
+  var flags = []string{
+              "genesis", // subcommand
+              "--consensus", "ibft",
+              "--bootnode", constructMultiAddressConnectionString(BOOTNODE_1_IP, BOOTNODE_1_PORT, nodeIds[0]),
+              "--bootnode", constructMultiAddressConnectionString(BOOTNODE_2_IP, BOOTNODE_2_PORT, nodeIds[1]),
+              "--premine",fmt.Sprint(GENESIS_ACCOUNT, ":", PREMINE_NUM_TOKENS_IN_WEI),
+              "--name",BLOCKCHAIN_NAME,
+              "--dir", GENESIS_FILE_PATH};
+
+   if IS_LOCAL {
+        flags = append(flags,  "--ibft-validators-prefix-path", fmt.Sprint(APP_PATH, "test-data-"))
+   } else {
+       flags = append(flags,
+                "--ibft-validator", publicKeys[0],
+                "--ibft-validator", publicKeys[1],
+                "--ibft-validator", publicKeys[2],
+                "--ibft-validator", publicKeys[3])
+   }
 
   // NOTE: don't include subcommand ex: genesis_command := "polygon-edge genesis"
   // Error Faced: panic: exec: "polygon-edge genesis": executable file not found in $PATH
@@ -91,8 +93,21 @@ func constructGenesisCommand() (string, []string) {
 
 func createValidators(){
   fmt.Println("Creating validators")
-  // Runs the script which creates the validators and presists the output in a file
-  executeBashScript("./create_validators.sh")
+  // Runs the script which creates the validators and persists the output in a file
+
+  fmt.Println("Creating directory: ", APP_PATH)
+  // create "app" folder inside volume
+  if err := os.MkdirAll(APP_PATH, os.ModePerm); err != nil {
+     log.Fatal(err)
+  }
+
+  var filePath string
+  if IS_LOCAL {
+    filePath = "./create_validators_local.sh"
+  } else {
+    filePath = "./create_validators.sh"
+  }
+  executeBashScript(filePath)
 }
 
 func createGenesisFile(){

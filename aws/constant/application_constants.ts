@@ -62,7 +62,7 @@ export const validators: Validator[] = [
 export const VPC_ID = "vpc-82669ee7"
 
 // if passed, same NLB will be used else, new NLB will be created.
-export const ALB_ARN = undefined;
+export const ALB_ARN = "arn:aws:elasticloadbalancing:us-east-1:726511334126:loadbalancer/app/springworks-public-alb/e33f3047f3d569c1";
 
 export const ALB_PORT = 443
 
@@ -75,4 +75,4 @@ export const HOSTED_ZONE_NAME = "springrole.com"
 export const DOMAIN_NAME = `blockchain.${HOSTED_ZONE_NAME}`
 
 // IF passed, existing hosted zone will be used, else new one will be created
-export const HOSTED_ZONE_ID = "";
+export const HOSTED_ZONE_ID = "Z3TRGGK18WYNF8"; // springrole.com

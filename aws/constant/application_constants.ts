@@ -62,7 +62,7 @@ export const validators: Validator[] = [
 export const VPC_ID = "vpc-82669ee7"
 
 // if passed, same NLB will be used else, new NLB will be created.
-export const ALB_ARN = "arn:aws:elasticloadbalancing:us-east-1:726511334126:loadbalancer/app/springworks-public-alb/e33f3047f3d569c1";
+export const ALB_EXISTS = true;
 
 export const ALB_PORT = 443
 

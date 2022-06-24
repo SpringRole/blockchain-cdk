@@ -4,13 +4,6 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import {PolicyStatement} from "aws-cdk-lib/aws-iam";
 import {IVpc} from "aws-cdk-lib/aws-ec2";
 import * as constants from "../constant/application_constants";
-import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import {Duration} from "aws-cdk-lib";
-import {VPCFactory} from "./vpc";
-import {IApplicationLoadBalancer, ListenerAction, ListenerCondition} from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import * as acm from "aws-cdk-lib/aws-certificatemanager";
-import * as route53 from "aws-cdk-lib/aws-route53";
-import * as route53Targets from "aws-cdk-lib/aws-route53-targets";
 
 
 export class ECSFactory extends Construct {
@@ -26,7 +19,6 @@ export class ECSFactory extends Construct {
 
         this.createTaskAndService(cluster, {...props, policy})
 
-        this.addNLBAndTargetGroups(props.VPC)
     }
 
 
@@ -123,135 +115,5 @@ export class ECSFactory extends Construct {
             })
         ]
 
-    }
-
-    /**
-     * Create NLB, Listeners and Target-Groups and attaches Target Groups to Listeners
-     * @param VPC
-     */
-    addNLBAndTargetGroups(VPC: VPCFactory){
-
-        let applicationLoadbalancer: IApplicationLoadBalancer, applicationListener;
-
-        let hostedZone: route53.IHostedZone;
-
-        if(constants.HOSTED_ZONE_ID){
-            console.log("Received HOSTED_ZONE_ID", constants.HOSTED_ZONE_ID)
-            console.log("Assuming, HostedZone is in same VPC passed")
-
-            hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-                hostedZoneId: constants.HOSTED_ZONE_ID,
-                zoneName: constants.HOSTED_ZONE_NAME,
-            })
-
-        }else {
-            hostedZone = new route53.HostedZone(this, 'HostedZone', {
-                zoneName: constants.HOSTED_ZONE_NAME,
-            });
-        }
-
-
-        if(constants.ALB_ARN){
-            // Assumes, loadbalancer and its listeners are created and is also in the same VPC.
-            // Ideally VPC would be created with custom existing VPCID which is attached to existing NLB
-            console.log("Received ALB_ARN", constants.ALB_ARN)
-            console.log("Assumptions:\n " +
-                "1. loadbalancer and its listeners are created\n " +
-                "2. LB is in same VPC passed.\n " +
-                "3. There is already a ACM Certificate created and attached to listener")
-            // add target groups and attach to network load balancer
-
-            applicationLoadbalancer = elbv2.ApplicationLoadBalancer.fromLookup(this, 'ALB', { loadBalancerArn: constants.ALB_ARN})
-            applicationListener = elbv2.ApplicationListener.fromLookup(this, 'listener', {
-                loadBalancerArn: constants.ALB_ARN,
-                listenerProtocol: elbv2.ApplicationProtocol.HTTPS,
-                listenerPort: constants.ALB_PORT
-            })
-
-            // can't use .addTargets() for listener referencing from .fromLookup(),
-            // Need to construct a new TargetGroup and use addTargetGroup
-
-            // Note: In case of NLB (Network Load balancer):
-            // Currently, CAN'T add Target Group when listener is imported via .fromLookup(), complains no function .addTargets()
-            // Creating listener via .addListener will also complain if listener with specified port is already present.
-
-        }else {
-
-            // ACM certificate is needed for ALB https port
-            const certificate = new acm.Certificate(this, 'Certificate', {
-                domainName: constants.DOMAIN_NAME,
-                // https://docs.aws.amazon.com/acm/latest/userguide/email-validation.html
-                // Observation: even though validation is commented, stack was stuck in pending-verification.
-                // By default, it could be using EMAIL validation
-                validation: acm.CertificateValidation.fromDns(hostedZone),
-            });
-
-            applicationLoadbalancer  = new elbv2.ApplicationLoadBalancer(this, 'ALB',
-                {
-                    vpc: VPC.vpc ,
-                    loadBalancerName: "Blockchain-loadbalancer",
-                    internetFacing: true
-                })
-
-            applicationListener = applicationLoadbalancer.addListener('listener', { port: constants.ALB_PORT });
-            applicationListener.addCertificates("ALBCertificates", [certificate])
-
-        }
-
-
-        // Target Group, can't use .addTargets() for existing ALBs
-
-        // const applicationTargetGroup = applicationListener.addTargets('target-group', {
-        //     port: constants.TARGET_GROUP_PORT,
-        //     targetGroupName:"Blockchain-tg",
-        //     // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-targetgroup.html#aws-resource-elasticloadbalancingv2-targetgroup-properties
-        //     targets: this.loadBalancerTargets,
-        //     healthCheck: {
-        //         enabled: true,
-        //         path: "/ping", // JSONRPC port responds with 200 OK, doesn't matter what path it is.
-        //         port: "traffic-port",
-        //         interval: Duration.seconds(30),
-        //         protocol: elbv2.Protocol.HTTP
-        //     }
-        // });
-
-        // Target group, //TODO: Need to test
-        const applicationTargetGroup = new elbv2.ApplicationTargetGroup(this, 'target-group', {
-            port: constants.TARGET_GROUP_PORT,
-            targetGroupName:"Blockchain-tg",
-            targets: this.loadBalancerTargets,
-            healthCheck: {
-                enabled: true,
-                path: "/ping", // JSONRPC port responds with 200 OK, doesn't matter what path it is.
-                port: "traffic-port",
-                interval: Duration.seconds(30),
-                protocol: elbv2.Protocol.HTTP
-            }
-        });
-
-        applicationListener.addTargetGroups('alb-target-groups', { targetGroups:[applicationTargetGroup] })
-
-        // Host condition
-        // If host matches, ALB forwards the request to target group as per rule
-        const  listenerCondition = ListenerCondition.hostHeaders([constants.DOMAIN_NAME])
-
-        // Forwarding Rule
-        new elbv2.ApplicationListenerRule(this, 'MyApplicationListenerRule', {
-            listener: applicationListener,
-            priority: 1,
-            // the properties below are optional
-            conditions: [listenerCondition],
-            targetGroups: [applicationTargetGroup],
-        });
-
-        if(constants.ALB_ARN && constants.HOSTED_ZONE_ID){
-            console.log("Both ALB and HostedZone exists, skipping creating route53.ARecord, Please create manually if not exists");
-        }else {
-            // Creating A type record mapping domain to ALB
-            new route53.ARecord(this, 'AliasRecord', {
-                zone: hostedZone,
-                target: route53.RecordTarget.fromAlias(new route53Targets.LoadBalancerTarget(applicationLoadbalancer)),
-            });
-        }
     }
 }

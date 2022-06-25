@@ -1,7 +1,12 @@
-# Welcome to your CDK TypeScript project
+# BlockChain CDK
 
-You should explore the contents of this project. It demonstrates a CDK app with an instance of a stack (`SpringroleBlockchainCdkStack`)
-which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
+Creates:
+- VPC if not present (pass existing VPC to use the same)
+- ECR repo, (Also builds and pushes Docker Image to ECR repo during `cdk deploy`)
+- EFS for storing blockchain state.
+- ECS Service and Task Definition with 4 ECS containers for validators
+- IF ALB (Application Load Balancer) doesn't exist, it creates ALB, Target groups, Listener Rules and ACM certificate
+- Creates HostedZone if it doesn't exist. Configure if already exists
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
@@ -20,5 +25,10 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 `aws configure --profile [profile_name]`
 2. Deploy the cdk bootstrap 
 `cdk bootstrap --profile [profile_name]`
-3. Deploy the stack
+3. Get Below Policy Statement added to your IAM Role. 
+   Then further `cdk deploy` Admin access can be remove and just use the role with below policy
+```json
+{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["sts:AssumeRole"],"Resource":["arn:aws:iam::*:role/cdk-*"]}]}
+```
+4. Deploy the stack
 `export ACCOUNT_ID=726511334126 && cdk deploy --profile [profile_name]`

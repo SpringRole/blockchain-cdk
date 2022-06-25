@@ -1,12 +1,16 @@
 # BlockChain CDK
 
-Creates:
+Creates Infra:
 - VPC if not present (pass existing VPC to use the same)
 - ECR repo, (Also builds and pushes Docker Image to ECR repo during `cdk deploy`)
 - EFS for storing blockchain state.
 - ECS Service and Task Definition with 4 ECS containers for validators
 - IF ALB (Application Load Balancer) doesn't exist, it creates ALB, Target groups, Listener Rules and ACM certificate
 - Creates HostedZone if it doesn't exist. Configure if already exists
+
+This package also has code to create Blockchain (Checkout `src/validator`)
+- Creates Genesis file if not present and store the secrets in SSM parameter store for first time.
+- Persists the blockchain state in EFS and validator node(server) starts. (Can be restarted)
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 

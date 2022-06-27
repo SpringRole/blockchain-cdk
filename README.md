@@ -34,5 +34,5 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 ```json
 {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["sts:AssumeRole"],"Resource":["arn:aws:iam::*:role/cdk-*"]}]}
 ```
-4. Deploy the stack
-`export ACCOUNT_ID=726511334126 && cdk deploy --profile [profile_name]`
+4. Deploy the stack (Decide the account and region)
+`export ACCOUNT_ID=726511334126 REGION=us-east-1 && cdk deploy --profile [profile_name]`

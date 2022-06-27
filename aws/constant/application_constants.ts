@@ -6,7 +6,7 @@ export const validatorServiceTaskCount = 1;
 
 export const pipeline = {
     accountId: process.env.ACCOUNT_ID,
-    region: "us-east-1"
+    region: process.env.REGION
 }
 
 export const ssmResource = `arn:aws:ssm:${pipeline.region}:${pipeline.accountId}:parameter/blockchain/validator*`
@@ -59,10 +59,10 @@ export const validators: Validator[] = [
 ]
 
 //if passed, same VPC will be used, else new one will be created.
-export const VPC_ID = "vpc-82669ee7"
+export const VPC_ID = ""
 
 // if passed, same NLB will be used else, new NLB will be created.
-export const ALB_EXISTS = true;
+export const ALB_EXISTS = false;
 
 export const ALB_PORT = 443
 
@@ -75,4 +75,5 @@ export const HOSTED_ZONE_NAME = "springrole.com"
 export const DOMAIN_NAME = `blockchain.${HOSTED_ZONE_NAME}`
 
 // IF passed, existing hosted zone will be used, else new one will be created
+// global resource, doesn't effect due to aws-region
 export const HOSTED_ZONE_ID = "Z3TRGGK18WYNF8"; // springrole.com

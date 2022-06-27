@@ -53,7 +53,7 @@ export const validators: Validator[] = [
             "GRPC_PORT": "40000",
             "LIBP2P_PORT": "40001",
             "JSONRPC_PORT": "40002",
-            "STAGE": process.env.STAGE || "localhost"
+            "STAGE": process.env.STAGE || "prod"
         }
     }
 ]

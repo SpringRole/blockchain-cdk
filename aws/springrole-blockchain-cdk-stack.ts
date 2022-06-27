@@ -116,6 +116,11 @@ export class SpringRoleBlockchainCdkStack extends Stack {
       // Rather it would be good, if this flow only changes the SGs added via CDK.
       // To be on Safer side, In case of existing LBs, assume that they would be adding everything related to connectivity manually
 
+
+      // For Target Group, can't use .addTargets() for existing ALBs
+      // need to create Target group using `new elbv2.ApplicationTargetGroup()`
+      // NOTE: when elbv2.ApplicationTargetGroup() is used, add vpc aswell.
+
     } else {
       console.log("Stack Creation will wait until ACM Certificate is validated.\n " +
           "Checkout https://docs.aws.amazon.com/acm/latest/userguide/email-validation.html")
@@ -140,10 +145,13 @@ export class SpringRoleBlockchainCdkStack extends Stack {
       const applicationListener = applicationLoadbalancer.addListener('listener', { port: constants.ALB_PORT });
       applicationListener.addCertificates("ALBCertificates", [certificate])
 
-      // Target Group, can't use .addTargets() for existing ALBs
+
+      // Can't use elbv2.ApplicationTargetGroup() for new ALBs
+      // Error faced:
+      // [BlockchainCdkStack/ALB/listener] Listener needs at least one default action or target group (call addTargetGroups or addAction)
+
       // Target group
-      const applicationTargetGroup = new elbv2.ApplicationTargetGroup(this, 'target-group', {
-        vpc: VPC.vpc, //  'vpc' is required for a non-Lambda TargetGroup
+      const applicationTargetGroup = applicationListener.addTargets('target-group', {
         port: constants.TARGET_GROUP_PORT,
         targetGroupName:"Blockchain-tg",
         targets: loadBalancerTargets,

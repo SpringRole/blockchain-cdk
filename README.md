@@ -34,5 +34,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 ```json
 {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["sts:AssumeRole"],"Resource":["arn:aws:iam::*:role/cdk-*"]}]}
 ```
-4. Deploy the stack (Decide the account and region)
+4. If you are deploying in any different region than us-west-1, 
+   1. you need to change the region in `src/validator/create_validators.sh` file
+5. Deploy the stack (Decide the account and region)
 `export ACCOUNT_ID=726511334126 REGION=us-east-1 && cdk deploy --profile [profile_name]`

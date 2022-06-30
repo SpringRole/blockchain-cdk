@@ -11,7 +11,7 @@ Creates Infrastructure on AWS to deploy Polygon-Edge:
   - If for some reasons, you need to separate the validator nodes into separate ECS services, then App-Mesh can be integrated.
     - This cut downs Loadbalancers, DNS query costs.
 - IF ALB (Application Load Balancer) doesn't exist, it creates ALB, Target groups, Listener Rules and ACM certificate
-  - If ALB exists and want to use the same, pass `ALB_EXISTS` as true in the config, but have to create Target groups, Listener Rule and hosted zone
+  - If ALB exists and want to use the same, pass `ALB_EXISTS` as true in the config, but have to create Target groups, Listener Rule and hosted zone manually.
 - Creates HostedZone if it doesn't exist. Configure if already exists
 
 This package also has code to create Polygon-Edge Blockchain (Checkout `src/validator`)
@@ -82,12 +82,14 @@ Configure your details, (There exists `config/default.json` file to start with)
 5. Deploy the stack (Recommended: use cdk deployment Role's profile)
 `cdk deploy --profile [profile_name]`
 
+NOTE: If your domain is not validated in AWS, CDK waits until the validation is done. This would send mails to listed emails. [Reference](https://docs.aws.amazon.com/acm/latest/userguide/email-validation.html)
+
 ### Actions to REPLACE the created blockchain.
 - There might be situations where you want to recreate your blockchain with some modified parameters. ex: with an increase in premined tokens. Once genesis.json file is created, most of the parameters are not modifiable, hence blockchain has to be recreated.
 
-Steps:
+Steps in the same order:
 1. Delete the ECR repo created by CDK manually. This is a stateful resource and had to be deleted manually.
 2. Delete the Infra stack, either from AWS cloudformation or using `cdk destroy --profile [profile_name]`
    Note: No need to delete the Bootstrap stack.
 3. Delete the EFS if not needed, this is a stateful resource and will be skipped when stack is deleted, hence this has to be deleted manually
-4. Delete the records from SSM parameter store with Key prefix ""
+4. Delete the records from AWS SSM parameter store with Key prefix "/blockchain/validator"

@@ -15,7 +15,7 @@ import * as route53Targets from "aws-cdk-lib/aws-route53-targets";
 import {IEcsLoadBalancerTarget} from "aws-cdk-lib/aws-ecs";
 
 
-export class SpringRoleBlockchainCdkStack extends Stack {
+export class BlockchainCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 

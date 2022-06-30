@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/springrole-blockchain-cdk.ts",
+  "app": "npx ts-node --prefer-ts-exts bin/blockchain-cdk.ts",
   "watch": {
     "include": [
       "**"

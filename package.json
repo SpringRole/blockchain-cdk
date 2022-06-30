@@ -1,8 +1,8 @@
 {
-  "name": "springrole-blockchain-cdk",
+  "name": "blockchain-cdk",
   "version": "0.1.0",
   "bin": {
-    "springrole-blockchain-cdk": "bin/springrole-blockchain-cdk.js"
+    "springrole-blockchain-cdk": "bin/blockchain-cdk.js"
   },
   "scripts": {
     "build": "tsc",

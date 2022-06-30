@@ -21,8 +21,10 @@
     "typescript": "~3.9.7"
   },
   "dependencies": {
+    "@types/config": "^0.0.41",
     "aws-cdk-lib": "2.25.0",
     "cdk-ecr-deployment": "^2.5.5",
+    "config": "^3.3.7",
     "constructs": "^10.0.0"
   }
 }

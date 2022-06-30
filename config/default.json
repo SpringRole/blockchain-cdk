@@ -1,0 +1,13 @@
+{
+  "STAGE": "",
+  "ACCOUNT_ID": "",
+  "REGION": "",
+  "GENESIS_ACCOUNT": "",
+  "PREMINE_NUM_TOKENS_IN_WEI": "",
+  "BLOCKCHAIN_NAME": "",
+  "HOSTED_ZONE_NAME": "",
+  "SUBDOMAIN": "",
+  "OPTIONAL_EXISTING_HOSTED_ZONE_ID": "",
+  "OPTIONAL_EXISTING_VPC_ID": "",
+  "ALB_EXISTS": false
+}

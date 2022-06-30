@@ -40,3 +40,10 @@ func executeBashScript(filePath string){
   fmt.Println("Executing script", filePath)
   executeCommand("/bin/bash", []string{filePath})
 }
+
+func executeBashScriptWithArgs(filePath string, args []string){
+  fmt.Println("Executing script", filePath, args)
+  var _args = []string{filePath}
+  _args = append(_args, args...) // Append args which are passed to script
+  executeCommand("/bin/bash", _args)
+}

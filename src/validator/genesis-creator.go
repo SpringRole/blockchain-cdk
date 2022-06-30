@@ -10,15 +10,41 @@ import (
 
 const VALIDATOR_COUNT = 4
 const VALIDATOR_OUTPUT_PREFIX = "validator"
-const GENESIS_ACCOUNT = "0xed4834Af469FE0F501a0A94c2f45EcC14b7E2C03"
-const PREMINE_NUM_TOKENS_IN_WEI = "100000000000000000000000000"
-const BLOCKCHAIN_NAME = "SpringRole"
+const GENESIS_ACCOUNT =  os.Getenv("GENESIS_ACCOUNT")
+const PREMINE_NUM_TOKENS_IN_WEI = os.Getenv("PREMINE_NUM_TOKENS_IN_WEI")
+const BLOCKCHAIN_NAME = os.Getenv("BLOCKCHAIN_NAME")
 
-const BOOTNODE_1_IP = "127.0.0.1" //public/private ip (without port)
-const BOOTNODE_1_PORT = "10001" // libp2p port
+const BOOTNODE_1_IP =  os.Getenv("BOOTNODE_1_IP") //public/private ip (without port)
+const BOOTNODE_1_PORT = os.Getenv("BOOTNODE_1_PORT") // libp2p port
 
-const BOOTNODE_2_IP = "127.0.0.1"
-const BOOTNODE_2_PORT = "20001"  // libp2p port
+const BOOTNODE_2_IP = os.Getenv("BOOTNODE_2_IP")
+const BOOTNODE_2_PORT = os.Getenv("BOOTNODE_2_PORT")  // libp2p port
+
+// aws region - used for SSM parameter store
+const AWS_REGION = os.Getenv("AWS_REGION")
+
+func validateGenesisEnvVars(){
+
+    if GENESIS_ACCOUNT == "" {
+        panic("GENESIS_ACCOUNT is empty")
+    }
+
+    if PREMINE_NUM_TOKENS_IN_WEI == "" {
+        panic("PREMINE_NUM_TOKENS_IN_WEI is empty")
+    }
+
+    if BLOCKCHAIN_NAME == "" {
+        panic("BLOCKCHAIN_NAME is empty")
+    }
+
+    if BOOTNODE_1_IP == "" {
+        panic("BOOTNODE_1_IP is empty")
+    }
+
+    if !IS_LOCAL && AWS_REGION == "" {
+        panic("AWS_REGION shouldn't be empty for non-localhost stage")
+    }
+}
 
 func getPublicKeyAndNodeId(fileName string) (string, string) {
 
@@ -100,13 +126,12 @@ func createValidators(){
      log.Fatal(err)
   }
 
-  var filePath string
   if IS_LOCAL {
-    filePath = "./create_validators_local.sh"
+    executeBashScript("./create_validators_local.sh")
   } else {
-    filePath = "./create_validators.sh"
+    executeBashScriptWithArgs("./create_validators.sh", string[]{AWS_REGION})
   }
-  executeBashScript(filePath)
+
 }
 
 func createGenesisFile(){
@@ -116,6 +141,7 @@ func createGenesisFile(){
 }
 
 func initiateValidatorsAndCreateGenesisFile(){
+    validateGenesisEnvVars()
     createValidators()
     createGenesisFile()
 }

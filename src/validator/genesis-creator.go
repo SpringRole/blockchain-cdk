@@ -10,18 +10,18 @@ import (
 
 const VALIDATOR_COUNT = 4
 const VALIDATOR_OUTPUT_PREFIX = "validator"
-const GENESIS_ACCOUNT =  os.Getenv("GENESIS_ACCOUNT")
-const PREMINE_NUM_TOKENS_IN_WEI = os.Getenv("PREMINE_NUM_TOKENS_IN_WEI")
-const BLOCKCHAIN_NAME = os.Getenv("BLOCKCHAIN_NAME")
+var GENESIS_ACCOUNT =  os.Getenv("GENESIS_ACCOUNT")
+var PREMINE_NUM_TOKENS_IN_WEI = os.Getenv("PREMINE_NUM_TOKENS_IN_WEI")
+var BLOCKCHAIN_NAME = os.Getenv("BLOCKCHAIN_NAME")
 
-const BOOTNODE_1_IP =  os.Getenv("BOOTNODE_1_IP") //public/private ip (without port)
-const BOOTNODE_1_PORT = os.Getenv("BOOTNODE_1_PORT") // libp2p port
+var BOOTNODE_1_IP =  os.Getenv("BOOTNODE_1_IP") //public/private ip (without port)
+var BOOTNODE_1_PORT = os.Getenv("BOOTNODE_1_PORT") // libp2p port
 
-const BOOTNODE_2_IP = os.Getenv("BOOTNODE_2_IP")
-const BOOTNODE_2_PORT = os.Getenv("BOOTNODE_2_PORT")  // libp2p port
+var BOOTNODE_2_IP = os.Getenv("BOOTNODE_2_IP")
+var BOOTNODE_2_PORT = os.Getenv("BOOTNODE_2_PORT")  // libp2p port
 
 // aws region - used for SSM parameter store
-const AWS_REGION = os.Getenv("AWS_REGION")
+var AWS_REGION = os.Getenv("AWS_REGION")
 
 func validateGenesisEnvVars(){
 
@@ -39,6 +39,18 @@ func validateGenesisEnvVars(){
 
     if BOOTNODE_1_IP == "" {
         panic("BOOTNODE_1_IP is empty")
+    }
+
+    if BOOTNODE_2_IP == "" {
+        panic("BOOTNODE_2_IP is empty")
+    }
+
+    if BOOTNODE_1_PORT == "" {
+        panic("BOOTNODE_1_PORT is empty")
+    }
+
+    if BOOTNODE_2_PORT == "" {
+        panic("BOOTNODE_2_PORT is empty")
     }
 
     if !IS_LOCAL && AWS_REGION == "" {
@@ -129,7 +141,7 @@ func createValidators(){
   if IS_LOCAL {
     executeBashScript("./create_validators_local.sh")
   } else {
-    executeBashScriptWithArgs("./create_validators.sh", string[]{AWS_REGION})
+    executeBashScriptWithArgs("./create_validators.sh", []string{AWS_REGION})
   }
 
 }
